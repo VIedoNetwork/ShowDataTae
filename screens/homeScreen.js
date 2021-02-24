@@ -6,15 +6,49 @@ import { AuthContext } from '../navigaiton/AuthProvider';
 import firestore from '@react-native-firebase/firestore';
 import { Input, ListItem } from 'react-native-elements';
 
-class ShowData extends Component { 
-  constructor() {
-    super();
 
+let arrayDictStudents = [];
+
+
+function checkID (examName , score){ // ********** Check if exam score is valid (not null)
+  if (score != null){
+    return "\t\t" + examName + "\t\t"+ score + "\n"
+  } 
+  return ""
+}
+
+function countExam (eachStudentDict){
+  let temp = "";
+  let keys = Object.keys(eachStudentDict);
+  keys.splice(0,1);   // remove the key ("name")
+
+  console.log(keys);
+  for (var i = 0; i < keys.length/2 ; i++){
+    temp += checkID(eachStudentDict[keys[i*2]] , eachStudentDict[keys[i*2+1]]) // cradit Dome
+  }
+  
+  return temp;
+}
+
+Object.size = function(obj) {   // ********** count element in dict (student : arrayDictStudents)
+  var size = 0,
+    key;
+  for (key in obj) {
+    if (obj.hasOwnProperty(key)) size++;
+  }
+  return size;
+}
+
+class StudentTakeTest extends React.Component {
+  constructor(props) {
+    super(props);
     this.fireStoreData = firestore().collection("Users");
     this.state = {
+      students : arrayDictStudents,
       userArr: []
     }
   }
+
 
   componentDidMount() {
     this.unsubscribe = this.fireStoreData.onSnapshot(this.getCollection);
@@ -38,29 +72,34 @@ class ShowData extends Component {
       userArr
     })
   }
-  render(){
-    return(
+
+  render() {
+    
+    {
+      this.state.userArr.map((item, i) => {
+        arrayDictStudents.push({
+              name: item.Name,
+              score: item.Score
+            }
+            )
+
+      })
+    }
+
+    return (
       <View>
-        <Text> Hi Test pull data </Text>
-        {
-          this.state.userArr.map((item, i) => {
-            return (
-                <ListItem
-                  key={i}
-                  bottomDivider>
-                    <ListItem.Content>
-                      <ListItem.Title>{item.Name}</ListItem.Title>
-                      <Button title={item.Name}/>
-                    </ListItem.Content>
+        {this.state.students.map(eachStudent => (
+          
+          <Text>
+            {eachStudent.name + "\n" /* Display each student name*/}
+            {eachStudent.score + "\n" /* Display each student name*/}
+            {countExam(eachStudent) /* Display each student's score*/}
+          </Text>
 
-                </ListItem>
-            );
-          })
-        }
+        ))}
       </View>
-    )
+    );
   }
-
 }
 
 
@@ -88,4 +127,4 @@ const styles = StyleSheet.create({
   });
 
 
-  export default ShowData;
+  export default StudentTakeTest;
